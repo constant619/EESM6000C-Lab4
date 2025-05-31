@@ -76,11 +76,7 @@ module user_proj_example #(
     wire [`MPRJ_IO_PADS-1:0] io_out;
     wire [`MPRJ_IO_PADS-1:0] io_oeb;
 
-    // output 
-    assign wbs_ack_o = ack_reg;
-    assign wbs_dat_o = wbs_dat_o_reg;
-
-
+   
     reg ack_reg ;
     reg  [31:0] wbs_dat_o_reg;
     reg  [3:0] counter ; 
