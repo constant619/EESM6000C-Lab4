@@ -76,55 +76,46 @@ module user_proj_example #(
     wire [`MPRJ_IO_PADS-1:0] io_out;
     wire [`MPRJ_IO_PADS-1:0] io_oeb;
 
-   
-    reg ack_reg ;
-    reg  [31:0] wbs_dat_o_reg;
-    reg  [3:0] counter ; 
+    reg        ack_reg;
+    reg [31:0] wbs_dat_o_reg;
+    reg [3:0]  counter;
 
-    // bram //
-    wire  en ;
-    wire [31:0]Do;
+    // BRAM
+    wire        en;
+    wire [31:0] Do;
     wire [31:0] A;
-    wire [3:0] wen = (wbs_we_i)?wbs_sel_i: 0 ;
+    wire [3:0]  wen = wbs_we_i ? wbs_sel_i : 4'b0;
     wire [31:0] Di = wbs_dat_i;
-    assign  A[31:0] = {10'h0,wbs_adr_i[23:2]};
-    assign en = wbs_stb_i && wbs_cyc_i && (wbs_adr_i[31:24]==8'h38);
-  
-    // output // 
-    assign wbs_ack_o = ack_reg ;
-    assign wbs_dat_o = wbs_dat_o_reg ; 
-    assign la_data_out =  {{(127-BITS){1'b0}},wbs_dat_o_reg};
+    assign A = {10'h0, wbs_adr_i[23:2]};
+    assign en = wbs_stb_i & wbs_cyc_i & (wbs_adr_i[31:24] == 8'h38);
 
-    always@(posedge wb_clk_i or posedge wb_rst_i )begin 
-        if(wb_rst_i)
-            counter <= 0;
-        else
-            if(ack_reg)
-                counter <= 0;
-            else if(en)
-                counter <=  counter +1;
-            else
-                counter <=  counter;
-    end 
-    always@(posedge wb_clk_i or posedge wb_rst_i )begin 
-        if(wb_rst_i)
-            wbs_dat_o_reg <= 0;
-        else
-            if(counter == DELAYS)
-                wbs_dat_o_reg <= Do;
-            else
-                wbs_dat_o_reg <=  0;
-    end 
+    // output
+    assign wbs_ack_o     = ack_reg;
+    assign wbs_dat_o     = wbs_dat_o_reg;
+    assign la_data_out   = {{(127-BITS){1'b0}}, wbs_dat_o_reg};
 
-    always@(posedge wb_clk_i or posedge wb_rst_i )begin 
-        if(wb_rst_i)
-            ack_reg <= 0;
-        else
-            if(counter == DELAYS)
-                ack_reg <= 1;
-            else
-                ack_reg <=  0;
-    end 
+    always @(posedge wb_clk_i, posedge wb_rst_i) begin
+        if (wb_rst_i) begin
+            counter <= 4'b0;
+        end else begin
+            counter <= ack_reg ? 4'b0 : (en ? counter + 1'b1 : counter);
+        end
+    end
+
+    always @(posedge wb_clk_i, posedge wb_rst_i) begin
+        if (wb_rst_i) begin
+            ack_reg        <= 1'b0;
+            wbs_dat_o_reg  <= 32'b0;
+        end else begin
+            if (counter == DELAYS) begin
+                ack_reg        <= 1'b1;
+                wbs_dat_o_reg  <= Do;
+            end else begin
+                ack_reg        <= 1'b0;
+                wbs_dat_o_reg  <= 32'b0;
+            end
+        end
+    end
 
 
     bram user_bram (
