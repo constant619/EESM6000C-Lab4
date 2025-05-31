@@ -117,15 +117,16 @@ module user_proj_example #(
         end
     end
 
-
+    
     bram user_bram (
-        .CLK(clk),
-        .WE0(),
-        .EN0(),
-        .Di0(),
-        .Do0(),
-        .A0()
+        .CLK(wb_clk_i),
+        .WE0(wen),
+        .EN0(en),
+        .Di0(Di),
+        .Do0(Do),
+        .A0(A)
     );
+
 
 endmodule
 
